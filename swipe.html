@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Swipe Animation with Auto-Animation</title>
+    <style>
+        #container {
+            width: 300px;
+            height: 100px;
+            overflow: hidden;
+            position: relative;
+            border: 1px black solid;
+        }
+
+        #component {
+            width: 100px;
+            height: 100px;
+            position: absolute;
+            top: 0;
+            left: 100px;
+            background-color: #007bff;
+            transition: transform 0.3s ease-in-out;
+            touch-action: pan-x; /* Enable horizontal panning on touch devices */
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="component"></div>
+    </div>
+
+    <script>
+        const component = document.getElementById('component');
+        const container = document.getElementById('container');
+        let isDragging = false;
+        let startX, currentX, startPosition;
+
+        component.addEventListener('mousedown', startDrag);
+        component.addEventListener('touchstart', startDrag, { passive: false });
+
+        document.addEventListener('mousemove', drag);
+        document.addEventListener('touchmove', drag, { passive: false });
+
+        document.addEventListener('mouseup', stopDrag);
+        document.addEventListener('touchend', stopDrag, { passive: false });
+
+        function startDrag(e) {
+            e.preventDefault();
+            isDragging = true;
+            startX = e.clientX || e.touches[0].clientX;
+            startPosition = parseInt(getComputedStyle(component).left);
+        }
+
+        function drag(e) {
+            if (!isDragging) return;
+            e.preventDefault();
+            currentX = e.clientX || e.touches[0].clientX;
+            const diffX = currentX - startX;
+            const newPosition = clamp(startPosition + diffX, 0, container.clientWidth - component.clientWidth);
+            component.style.left = newPosition + 'px';
+        }
+
+        function stopDrag() {
+            isDragging = false;
+            const swipeDirection = currentX > startX ? 'right' : 'left';
+            if (swipeDirection === 'left') {
+                // Animate the component to left: 0px
+                gsap.to(component, { left: 0, duration: 0.5 });
+            } else {
+                // Animate the component to left: 200px
+                gsap.to(component, { left: 200, duration: 0.5 });
+            }
+        }
+
+        function clamp(value, min, max) {
+            return Math.min(Math.max(value, min), max);
+        }
+    </script>
+
+    <!-- Include the GSAP library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.9.1/gsap.min.js"></script>
+</body>
+</html>
